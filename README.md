@@ -9,37 +9,37 @@ With integrated Jenkins CI/CD pipelines, Trello-based Agile management, and Micr
 
 ⚙️ Key Features
 
-🎮 Data-Driven Recommendations – Suggests games based on metadata, category, and difficulty levels.
+  🎮 Data-Driven Recommendations – Suggests games based on metadata, category, and difficulty levels.
 
-🧠 Skill & Genre-Based Filters – Explore games that match interests like logic, creativity, and learning.
+  🧠 Skill & Genre-Based Filters – Explore games that match interests like logic, creativity, and learning.
 
-🌐 Interactive Gameplay – Embedded game previews and play options through third-party APIs.
+  🌐 Interactive Gameplay – Embedded game previews and play options through third-party APIs.
 
-🧩 Modern UI/UX – Built with React.js for a responsive, accessible, and engaging interface.
+  🧩 Modern UI/UX – Built with React.js for a responsive, accessible, and engaging interface.
 
-🧰 Scalable Backend – Node.js + Express handles data logic and recommendation computation.
+  🧰 Scalable Backend – Node.js + Express handles data logic and recommendation computation.
 
-🔄 CI/CD Integration – Automated testing and deployment using Jenkins.
+  🔄 CI/CD Integration – Automated testing and deployment using Jenkins.
 
-🧪 Comprehensive Testing – Ensures stability and reliability with Jest, Mocha, and Postman.
+  🧪 Comprehensive Testing – Ensures stability and reliability with Jest, Mocha, and Postman.
 
-📋 Agile Management – Managed via Trello boards and weekly sprint planning.
+  📋 Agile Management – Managed via Trello boards and weekly sprint planning.
 
 🧠 Tech Stack
 
-Frontend: React.js, HTML5, CSS3, JavaScript (ES6+)
+   Frontend: React.js, HTML5, CSS3, JavaScript (ES6+)
 
-Backend: Node.js, Express.js
+   Backend: Node.js, Express.js
 
-Database: MongoDB
+   Database: MongoDB
 
-Testing: Jest, Mocha, Postman
+   Testing: Jest, Mocha, Postman
 
-CI/CD: Jenkins
+   CI/CD: Jenkins
 
-Project Management: Trello, Microsoft Teams
+   Project Management: Trello, Microsoft Teams
 
-Deployment: Vercel / Render / AWS
+   Deployment: Vercel / Render / AWS
 
 🌍 Market Relevance
 
@@ -47,10 +47,20 @@ With the global gaming industry surpassing $300 billion and EdTech gamification 
 
 👨‍💻 Team Members
 
-Swastik Pathak – Project Lead / Full Stack Developer
+   Swastik Pathak – Project Lead / Full Stack Developer
 
-Vrutik Patel – Front-End Developer
+   Vrutik Patel – Front-End Developer
 
-Kaushikkumar Gadat – Back-End Developer
+   Kaushikkumar Gadat – Back-End Developer
 
-Yash Lande – Database & QA Lead
+   Yash Lande – Database & QA Lead
+
+🏆 Project Highlights
+
+   Demonstrates real-world MERN architecture.
+
+   Implements data-driven logic and content filtering.
+
+   Follows Agile methodology using Trello and CI/CD with Jenkins.
+
+   Includes wireframes, logo design, and end-to-end testing phase.
