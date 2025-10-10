@@ -1,0 +1,19 @@
+# dependencies
+node_modules/
+
+# environment files
+.env
+
+# production builds
+/build
+/dist
+
+# system files
+.DS_Store
+
+# logs and temp files
+*.log
+
+# vscode settings
+.vscode/
+.idea/
