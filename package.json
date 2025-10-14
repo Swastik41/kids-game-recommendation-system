@@ -2,9 +2,7 @@
   "dependencies": {
     "concurrently": "^9.2.1"
   },
-
   "scripts": {
-  "dev": "concurrently \"npm run dev --prefix server\" \"npm start --prefix client\""
-}
-
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm start --prefix client\""
+  }
 }
