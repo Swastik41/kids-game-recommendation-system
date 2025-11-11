@@ -1,0 +1,146 @@
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext.jsx";
+
+export default function Signup() {
+  const { register } = useAuth();
+  const [role, setRole] = useState("Parent");
+  const [fullName, setFullName] = useState("");
+  const [childAge, setChildAge] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [agree, setAgree] = useState(false);
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setMessage("");
+    if (!agree) { setMessage("Please agree to the terms to continue."); return; }
+    if (password !== confirm) { setMessage("Passwords do not match."); return; }
+
+    try {
+      setLoading(true);
+      await register({
+        name: fullName,
+        role,
+        email,
+        password,
+        childAge: childAge || undefined,
+      });
+      navigate("/"); // go Home after sign up
+    } catch (err) {
+      setMessage(err.message || "Signup failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <section className="signup">
+      <div className="signup__card">
+        <h1 className="signup__title">Create an Account</h1>
+
+        <form className="signup__form" onSubmit={handleSubmit}>
+          <div className="field">
+            <label className="label">Role</label>
+            <select className="select" value={role} onChange={(e) => setRole(e.target.value)}>
+              <option value="Parent">Parent</option>
+              
+              <option value="Admin">Admin</option>
+            
+            </select>
+          </div>
+
+          <div className="field">
+            <label className="label">Full Name</label>
+            <input
+              className="input"
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="Your full name"
+              required
+            />
+          </div>
+
+          <div className="field">
+            <label className="label">Child Age (optional)</label>
+            <input
+              className="input"
+              type="number"
+              value={childAge}
+              onChange={(e) => setChildAge(e.target.value)}
+              min="1"
+              max="18"
+              placeholder="e.g., 7"
+            />
+          </div>
+
+          <div className="field">
+            <label className="label">Email</label>
+            <input
+              className="input"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              required
+            />
+          </div>
+
+          <div className="field">
+            <label className="label">Password</label>
+            <input
+              className="input"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+            />
+          </div>
+
+          <div className="field">
+            <label className="label">Confirm Password</label>
+            <input
+              className="input"
+              type="password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              placeholder="••••••••"
+              required
+            />
+          </div>
+
+          <div className="field field--full">
+            <label className="checkbox">
+              <input
+                type="checkbox"
+                checked={agree}
+                onChange={(e) => setAgree(e.target.checked)}
+              />
+              I agree to the Terms
+            </label>
+          </div>
+
+          {message && (
+            <div className="msg msg--error">{message}</div>
+          )}
+
+          <div className="actions">
+            <button type="submit" className="btn btn--primary" disabled={loading}>
+              {loading ? "Creating account…" : "Sign Up"}
+            </button>
+            <div className="help">
+              Already have an account?{" "}
+              <Link className="link" to="/admin">Log in</Link>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+  );
+}

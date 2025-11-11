@@ -1,8 +1,24 @@
 {
   "dependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.1",
+    "lucide-react": "^0.548.0",
+    "react-router-dom": "^7.9.4"
   },
   "scripts": {
     "dev": "concurrently \"npm run dev --prefix server\" \"npm start --prefix client\""
-  }
+  },
+  "name": "kids-game-recommendation-system",
+  "version": "1.0.0",
+  "description": "🧩 Kids Game Recommendation System (MERN Stack)",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Swastik41/kids-game-recommendation-system.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Swastik41/kids-game-recommendation-system/issues"
+  },
+  "homepage": "https://github.com/Swastik41/kids-game-recommendation-system#readme"
 }
