@@ -21,7 +21,7 @@ export default function Recommendation() {
 
   const fetchRecommendations = async (reset = false) => {
     setLoading(true);
-    const params = { ...filters, page, limit: 10 };
+    const params = { ...filters, page, limit: 12 };
     const res = await axios.get("/api/games/recommendations", { params });
     const { games: newGames, totalPages } = res.data;
 

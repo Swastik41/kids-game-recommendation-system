@@ -12,10 +12,10 @@ import Game from "../models/Game.js";
 
 dotenv.config();
 
-// ✅ Correct path for when run inside `/server`
+// Correct path for when run inside `/server`
 const jsonPath = (file) => path.join(process.cwd(), "data", file);
 
-// ✅ Decode function for letter-based key mapping (A–P)
+// Decode function for letter-based key mapping (A–P)
 const decodeRecord = (record, map, source) => ({
   title: record[Object.keys(map).find((k) => map[k] === "Name")] || "Untitled Game",
   description:
@@ -52,28 +52,28 @@ async function seedGames() {
   try {
     console.log("Connecting to MongoDB...");
     await mongoose.connect(process.env.MONGO_URI);
-    console.log("✅ Connected to MongoDB!");
+    console.log("Connected to MongoDB!");
 
-    // ✅ Load both JSON files
+    // Load both JSON files
     const mobilePath = jsonPath("newmobilegames.json");
     const videoPath = jsonPath("newvideogames.json");
 
     if (!fs.existsSync(mobilePath) || !fs.existsSync(videoPath)) {
-      throw new Error("❌ One or both dataset files not found in /server/data/");
+      throw new Error("One or both dataset files not found in /server/data/");
     }
 
     const mobileRaw = JSON.parse(fs.readFileSync(mobilePath, "utf8"));
     const videoRaw = JSON.parse(fs.readFileSync(videoPath, "utf8"));
 
-    // ✅ Extract column mapping (first row)
+    // Extract column mapping (first row)
     const mobileMap = mobileRaw[0];
     const videoMap = videoRaw[0];
 
-    // ✅ Actual records (skip header)
+    // Actual records (skip header)
     const mobileRecords = mobileRaw.slice(1);
     const videoRecords = videoRaw.slice(1);
 
-    // ✅ Convert to schema format
+    // Convert to schema format
     const allGames = [
       ...mobileRecords.map((r) => decodeRecord(r, mobileMap, "mobile")),
       ...videoRecords.map((r) => decodeRecord(r, videoMap, "video")),
@@ -81,13 +81,13 @@ async function seedGames() {
 
     console.log(`Preparing to insert ${allGames.length} games...`);
 
-    // ✅ Direct insert (no deletion, no deduplication)
+    // Direct insert (no deletion, no deduplication)
     const result = await Game.insertMany(allGames, { ordered: false });
     console.log(`🎮 Successfully inserted ${result.length} games!`);
 
     process.exit(0);
   } catch (err) {
-    console.error("❌ Error seeding games:", err.message);
+    console.error("Error seeding games:", err.message);
     process.exit(1);
   }
 }

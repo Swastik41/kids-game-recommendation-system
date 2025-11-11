@@ -26,7 +26,7 @@ export const getRecommendations = async (req, res) => {
       search,
       sort,
       page = 1,
-      limit = 10,
+      limit = 12,
     } = req.query;
 
     const query = {};
