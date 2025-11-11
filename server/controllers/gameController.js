@@ -14,25 +14,65 @@ export const getHomeGames = async (req, res) => {
   }
 };
 
-// @desc   Get recommendations (filter by genre, skill, difficulty, platform)
-// @route  GET /api/games/recommendations
+// Enhanced Recommendations with Search + Sorting + Pagination
 export const getRecommendations = async (req, res) => {
   try {
-    const { genre, skill, difficulty } = req.query;
-    const filter = {};
+    const {
+      genre,
+      platform,
+      content,
+      minRating,
+      minReviews,
+      search,
+      sort,
+      page = 1,
+      limit = 10,
+    } = req.query;
 
-    if (genre) filter.genres = { $regex: genre, $options: "i" };
-    if (skill) filter.target_skills = { $regex: skill, $options: "i" };
-    if (difficulty) filter.difficulty_level = { $regex: difficulty, $options: "i" };
+    const query = {};
 
-    const games = await Game.find(filter)
-      .sort({ popularity_score: -1, average_user_rating: -1 })
-      .limit(20)
+    // ✅ Dynamic filters
+    if (genre) query.genres = { $regex: genre, $options: "i" };
+    if (platform) query.platform_type = { $regex: platform, $options: "i" };
+    if (content) query.content_suitability = { $regex: content, $options: "i" };
+    if (minRating) query.average_user_rating = { $gte: Number(minRating) };
+    if (minReviews) query.rating_count = { $gte: Number(minReviews) };
+    if (search) query.title = { $regex: search, $options: "i" };
+
+    // ✅ Sorting logic
+    let sortQuery = {};
+    switch (sort) {
+      case "rating":
+        sortQuery = { average_user_rating: -1 };
+        break;
+      case "reviews":
+        sortQuery = { rating_count: -1 };
+        break;
+      case "recent":
+        sortQuery = { release_year: -1 };
+        break;
+      default:
+        sortQuery = { popularity_score: -1, average_user_rating: -1, rating_count: -1 };
+    }
+
+    // ✅ Pagination logic
+    const skip = (Number(page) - 1) * Number(limit);
+    const total = await Game.countDocuments(query);
+    const games = await Game.find(query)
+      .sort(sortQuery)
+      .skip(skip)
+      .limit(Number(limit))
       .lean();
 
-    res.status(200).json(games);
-  } catch (err) {
-    console.error("Error fetching recommendations:", err);
-    res.status(500).json({ error: "Server error" });
+    res.status(200).json({
+      total,
+      page: Number(page),
+      limit: Number(limit),
+      totalPages: Math.ceil(total / Number(limit)),
+      games,
+    });
+  } catch (error) {
+    console.error("Error fetching recommendations:", error.message);
+    res.status(500).json({ error: "Server error while fetching games." });
   }
 };
