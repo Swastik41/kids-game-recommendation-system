@@ -77,20 +77,23 @@ export default function Recommendation() {
           <option value="Games">Games</option>
         </select>
 
+
         <select name="platform" value={filters.platform} onChange={handleChange}>
           <option value="">Platform</option>
           <option value="Mobile">Mobile</option>
-          <option value="Cross-Platform">Cross-Platform</option>
-          <option value="PC">PC</option>
+          <option value="Cross-Platform">Video (Cross-Platform)</option>
+          <option value="PC">Video (PC)</option>
         </select>
+
 
         <select name="content" value={filters.content} onChange={handleChange}>
           <option value="">Content Rating</option>
-          <option value="Everyone">Everyone</option>
           <option value="4+">4+</option>
           <option value="9+">9+</option>
           <option value="12+">12+</option>
+          <option value="Everyone">Everyone</option>
         </select>
+
 
         <select name="minRating" value={filters.minRating} onChange={handleChange}>
           <option value="">Min Rating</option>
@@ -117,28 +120,35 @@ export default function Recommendation() {
       </div>
 
       {/* 🧩 Game Cards */}
-      <div className="cards">
-        {games.map((g) => (
-          <div key={g._id} className="game-card">
-            <div className="thumb">
-              <img
-                src={g.thumbnail_url || "/placeholder.png"}
-                alt={g.title}
-                style={{ width: "100%", borderRadius: "8px" }}
-              />
-            </div>
-            <div className="game-body">
-              <div className="game-title">{g.title}</div>
-              <div className="game-meta">
-                ⭐ {g.average_user_rating ?? "N/A"} | Reviews: {g.rating_count ?? 0}
-              </div>
-              <button className="btn btn-light" onClick={() => setSelected(g)}>
-                View Details
-              </button>
-            </div>
-          </div>
-        ))}
+<div className="cards">
+  {games.map((g) => (
+    <div key={g._id} className="game-card">
+      {/* Game Source Tag */}
+      <div
+        className={`source-tag ${
+          g.platform_type === "Mobile" ? "mobile-tag" : "video-tag"
+        }`}
+      >
+        {g.platform_type === "Mobile" ? "📱 Mobile Game" : "🎮 Video Game"}
       </div>
+
+      {/* Thumbnail */}
+      <div className="thumb">
+        <img src={g.thumbnail_url || "/placeholder.png"} alt={g.title} />
+      </div>
+
+      {/* Game Info */}
+      <div className="game-body">
+        <div className="game-title">{g.title}</div>
+        <div className="game-meta">
+          ⭐ {g.average_user_rating || 0} | Reviews: {g.rating_count || 0}
+        </div>
+        <button className="btn btn-light" onClick={() => setSelected(g)}>View Details</button>
+      </div>
+    </div>
+  ))}
+</div>
+
 
       {/* Load More */}
       {page < totalPages && (

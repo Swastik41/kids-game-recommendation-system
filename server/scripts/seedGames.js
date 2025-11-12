@@ -16,37 +16,70 @@ dotenv.config();
 const jsonPath = (file) => path.join(process.cwd(), "data", file);
 
 // Decode function for letter-based key mapping (A–P)
-const decodeRecord = (record, map, source) => ({
-  title: record[Object.keys(map).find((k) => map[k] === "Name")] || "Untitled Game",
-  description:
-    record[Object.keys(map).find((k) => map[k] === "Description")]?.trim() ||
-    "No description available.",
-  developer: record[Object.keys(map).find((k) => map[k] === "Developer")] || "Unknown Developer",
-  publisher: "", // Not in dataset
-  release_year: null, // Not provided
-  primary_genre: record[Object.keys(map).find((k) => map[k] === "Primary Genre")] || "General",
-  genres:
-    (record[Object.keys(map).find((k) => map[k] === "Genres")] || "")
-      .split(",")
-      .map((g) => g.trim())
-      .filter(Boolean) || [],
-  gameplay_style: "",
-  average_user_rating:
-    Number(record[Object.keys(map).find((k) => map[k] === "Average User Rating")]) || 0,
-  rating_count:
-    Number(record[Object.keys(map).find((k) => map[k] === "User Rating Count")]) || 0,
-  meta_score: 0,
-  popularity_score: 0,
-  content_suitability:
-    record[Object.keys(map).find((k) => map[k] === "Age Rating")] || "Everyone",
-  target_skills: [],
-  difficulty_level: "Easy",
-  platform_type: source === "mobile" ? "Mobile" : "Cross-Platform",
-  platform: [source === "mobile" ? "Mobile" : "PC"],
-  embed_url: "",
-  thumbnail_url:
-    record[Object.keys(map).find((k) => map[k] === "Icon URL")] || "",
-});
+// ✅ Decode both datasets with unique mapping logic
+const decodeRecord = (record, map, source) => {
+  if (source === "mobile") {
+    return {
+      title: record[Object.keys(map).find((k) => map[k] === "Name")] || "Untitled Game",
+      description:
+        record[Object.keys(map).find((k) => map[k] === "Description")]?.trim() ||
+        "No description available.",
+      developer: record[Object.keys(map).find((k) => map[k] === "Developer")] || "Unknown Developer",
+      publisher: "",
+      release_year: null,
+      primary_genre: record[Object.keys(map).find((k) => map[k] === "Primary Genre")] || "General",
+      genres:
+        (record[Object.keys(map).find((k) => map[k] === "Genres")] || "")
+          .split(",")
+          .map((g) => g.trim())
+          .filter(Boolean) || [],
+      gameplay_style: "",
+      average_user_rating:
+        Number(record[Object.keys(map).find((k) => map[k] === "Average User Rating")]) || 0,
+      rating_count:
+        Number(record[Object.keys(map).find((k) => map[k] === "User Rating Count")]) || 0,
+      meta_score: 0,
+      popularity_score: 0,
+      content_suitability:
+        record[Object.keys(map).find((k) => map[k] === "Age Rating")] || "Everyone",
+      target_skills: [],
+      difficulty_level: "Easy",
+      platform_type: "Mobile",
+      platform: ["Mobile"],
+      embed_url: "",
+      thumbnail_url:
+        record[Object.keys(map).find((k) => map[k] === "Icon URL")] || "",
+    };
+  } else if (source === "video") {
+    return {
+      title: record["B"] || "Untitled Game",
+      description: record["I"] || "No description available.",
+      developer: record["D"] || "Unknown Developer",
+      publisher: "",
+      release_year: parseInt(record["C"]) || null,
+      primary_genre: Array.isArray(record["H"])
+        ? record["H"][0]
+        : typeof record["H"] === "string"
+        ? record["H"].replace(/[\[\]']/g, "").split(",")[0].trim()
+        : "General",
+      genres: typeof record["H"] === "string"
+        ? record["H"].replace(/[\[\]']/g, "").split(",").map((g) => g.trim())
+        : [],
+      gameplay_style: "",
+      average_user_rating: Number(record["E"]) || 0,
+      rating_count: parseInt((record["G"] || "0").replace(/[^\d]/g, "")) || 0,
+      meta_score: 0,
+      popularity_score: parseInt((record["F"] || "0").replace(/[^\d]/g, "")) || 0,
+      content_suitability: "Teen", // since these are more mature games
+      target_skills: [],
+      difficulty_level: "Medium",
+      platform_type: "Cross-Platform",
+      platform: ["PC", "Console"],
+      embed_url: "",
+      thumbnail_url: "", // no thumbnail in dataset
+    };
+  }
+};
 
 async function seedGames() {
   try {

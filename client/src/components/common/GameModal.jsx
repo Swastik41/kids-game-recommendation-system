@@ -13,12 +13,23 @@ export default function GameModal({ open, game, onClose, onPlay }) {
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  // Focus the close button when opened (simple focus management)
+  // Focus management
   useEffect(() => {
     if (open && closeBtnRef.current) closeBtnRef.current.focus();
   }, [open]);
 
   if (!open || !game) return null;
+
+  // Shorten long descriptions to 2–3 lines
+  const shortDesc =
+    game.description && game.description.length > 220
+      ? game.description.substring(0, 220) + "..."
+      : game.description || "No description available.";
+
+  // Helper to clean up genres array
+  const genreList = Array.isArray(game.genres)
+    ? game.genres.filter(Boolean).join(", ")
+    : game.genres || "—";
 
   return (
     <div
@@ -27,7 +38,7 @@ export default function GameModal({ open, game, onClose, onPlay }) {
       aria-modal="true"
       aria-labelledby="game-modal-title"
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose?.(); // click backdrop to close
+        if (e.target === e.currentTarget) onClose?.();
       }}
       ref={dialogRef}
     >
@@ -43,38 +54,56 @@ export default function GameModal({ open, game, onClose, onPlay }) {
 
         <header className="modal__header">
           <h2 id="game-modal-title" className="modal__title">
-            {game.title}
+            {game.title || "Untitled Game"}
           </h2>
+          <span
+            className={`source-tag ${
+              game.platform_type === "Mobile" ? "mobile-tag" : "video-tag"
+            }`}
+          >
+            {game.platform_type === "Mobile" ? "📱 Mobile Game" : "🎮 Video Game"}
+          </span>
         </header>
 
         <div className="modal__body">
+          {/* Thumbnail */}
           <div className="modal__media">
-            {/* replace with <img src={game.imageUrl} alt={`${game.title} cover`} /> when you have images */}
-            <div className="thumb modal__thumb">Game Image</div>
+            <img
+              src={game.thumbnail_url || "/placeholder.png"}
+              alt={`${game.title} cover`}
+              className="modal__thumb"
+            />
           </div>
 
+          {/* Content */}
           <div className="modal__content">
             <div className="modal__meta">
               <div className="meta__row">
-                <span className="meta__label">Rating</span>
-                <span className="meta__value">{game.rating}</span>
+                <span className="meta__label">⭐ Rating</span>
+                <span className="meta__value">
+                  {game.average_user_rating ? game.average_user_rating.toFixed(1) : "N/A"}
+                </span>
               </div>
+
               <div className="meta__row">
-                <span className="meta__label">Category</span>
-                <span className="meta__value">{game.category || "—"}</span>
+                <span className="meta__label">🎮 Category</span>
+                <span className="meta__value">{genreList}</span>
               </div>
+
               <div className="meta__row">
-                <span className="meta__label">Age</span>
-                <span className="meta__value">{game.ageRange || "—"}</span>
+                <span className="meta__label">👥 Reviews</span>
+                <span className="meta__value">{game.rating_count || 0}</span>
+              </div>
+
+              <div className="meta__row">
+                <span className="meta__label">🧠 Difficulty</span>
+                <span className="meta__value">{game.difficulty_level || "Easy"}</span>
               </div>
             </div>
 
             <hr className="modal__divider" />
 
-            <p className="modal__desc">
-              {game.description ||
-                "A fun, adaptive game designed to build skills through play. Great for your selected age and category."}
-            </p>
+            <p className="modal__desc">{shortDesc}</p>
 
             <div className="modal__actions">
               <button className="btn btn-dark" onClick={() => onPlay?.(game)}>
