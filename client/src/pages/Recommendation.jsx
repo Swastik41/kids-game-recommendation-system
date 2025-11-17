@@ -82,7 +82,6 @@ export default function Recommendation() {
           <option value="">Platform</option>
           <option value="Mobile">Mobile</option>
           <option value="Cross-Platform">Video (Cross-Platform)</option>
-          <option value="PC">Video (PC)</option>
         </select>
 
 
