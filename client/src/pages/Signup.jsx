@@ -18,11 +18,14 @@ export default function Signup() {
   async function handleSubmit(e) {
     e.preventDefault();
     setMessage("");
+
     if (!agree) { setMessage("Please agree to the terms to continue."); return; }
     if (password !== confirm) { setMessage("Passwords do not match."); return; }
 
     try {
       setLoading(true);
+
+      // Create the account (do NOT log in here)
       await register({
         name: fullName,
         role,
@@ -30,7 +33,18 @@ export default function Signup() {
         password,
         childAge: childAge || undefined,
       });
-      navigate("/"); // go Home after sign up
+
+      // Make sure no token/user remains (in case register() stored them)
+      if (localStorage.getItem("token")) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+      }
+
+      // ✅ Go to LOGIN page after sign up (not Home)
+      navigate("/admin", {
+        state: { flash: "Account created successfully! Please log in." },
+        replace: true,
+      });
     } catch (err) {
       setMessage(err.message || "Signup failed");
     } finally {
@@ -48,9 +62,7 @@ export default function Signup() {
             <label className="label">Role</label>
             <select className="select" value={role} onChange={(e) => setRole(e.target.value)}>
               <option value="Parent">Parent</option>
-              
               <option value="Admin">Admin</option>
-            
             </select>
           </div>
 
@@ -126,9 +138,7 @@ export default function Signup() {
             </label>
           </div>
 
-          {message && (
-            <div className="msg msg--error">{message}</div>
-          )}
+          {message && <div className="msg msg--error">{message}</div>}
 
           <div className="actions">
             <button type="submit" className="btn btn--primary" disabled={loading}>
