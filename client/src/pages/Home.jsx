@@ -47,7 +47,7 @@ export default function Home() {
                     <div className="game-meta">
                       ⭐ {g.average_user_rating?.toFixed(1) || "N/A"}
                     </div>
-                    <button className="btn btn-light">View Details</button>
+                    <Link to="/recommendation" className="btn btn-light">View Details</Link>
                   </div>
                 </div>
               ))
