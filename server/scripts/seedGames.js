@@ -15,6 +15,19 @@ dotenv.config();
 // Correct path for when run inside `/server`
 const jsonPath = (file) => path.join(process.cwd(), "data", file);
 
+// 🎨 Genre-based thumbnail dictionary for video games
+// 🎮 PixiPlay — Genre-Based Thumbnails for Video Games
+const genreThumbnails = {
+  "Action": "https://cdn-icons-png.flaticon.com/512/3209/3209278.png",        // action pose icon
+  "Adventure": "https://cdn-icons-png.flaticon.com/512/4321/4321374.png",     // mountain adventure
+  "Strategy": "https://cdn-icons-png.flaticon.com/512/4315/4315445.png",      // chess/strategic thinking
+  "Puzzle": "https://cdn-icons-png.flaticon.com/512/4466/4466824.png",        // puzzle piece
+  "Games": "https://cdn-icons-png.flaticon.com/512/1055/1055646.png",         // general controller
+  "Default": "https://cdn-icons-png.flaticon.com/512/1055/1055646.png"        // fallback generic game controller
+};
+
+
+
 // Decode function for letter-based key mapping (A–P)
 // ✅ Decode both datasets with unique mapping logic
 const decodeRecord = (record, map, source) => {
@@ -51,34 +64,40 @@ const decodeRecord = (record, map, source) => {
         record[Object.keys(map).find((k) => map[k] === "Icon URL")] || "",
     };
   } else if (source === "video") {
-    return {
-      title: record["B"] || "Untitled Game",
-      description: record["I"] || "No description available.",
-      developer: record["D"] || "Unknown Developer",
-      publisher: "",
-      release_year: parseInt(record["C"]) || null,
-      primary_genre: Array.isArray(record["H"])
-        ? record["H"][0]
-        : typeof record["H"] === "string"
-        ? record["H"].replace(/[\[\]']/g, "").split(",")[0].trim()
-        : "General",
-      genres: typeof record["H"] === "string"
-        ? record["H"].replace(/[\[\]']/g, "").split(",").map((g) => g.trim())
-        : [],
-      gameplay_style: "",
-      average_user_rating: Number(record["E"]) || 0,
-      rating_count: parseInt((record["G"] || "0").replace(/[^\d]/g, "")) || 0,
-      meta_score: 0,
-      popularity_score: parseInt((record["F"] || "0").replace(/[^\d]/g, "")) || 0,
-      content_suitability: "Teen", // since these are more mature games
-      target_skills: [],
-      difficulty_level: "Medium",
-      platform_type: "Cross-Platform",
-      platform: ["PC", "Console"],
-      embed_url: "",
-      thumbnail_url: "", // no thumbnail in dataset
-    };
+  // extract genre safely
+  let rawGenres = record["H"];
+  let cleanedGenres = [];
+  if (typeof rawGenres === "string") {
+    cleanedGenres = rawGenres.replace(/[\[\]']/g, "").split(",").map((g) => g.trim());
   }
+
+    const mainGenre = cleanedGenres[0] || "Default";
+    const matchedThumbnail =
+      genreThumbnails[mainGenre] || genreThumbnails["Default"];
+
+
+  return {
+    title: record["B"] || "Untitled Game",
+    description: record["I"] || "No description available.",
+    developer: record["D"] || "Unknown Developer",
+    publisher: "",
+    release_year: parseInt(record["C"]) || null,
+    primary_genre: mainGenre,
+    genres: cleanedGenres,
+    gameplay_style: "",
+    average_user_rating: Number(record["E"]) || 0,
+    rating_count: parseInt((record["G"] || "0").replace(/[^\d]/g, "")) || 0,
+    meta_score: 0,
+    popularity_score: parseInt((record["F"] || "0").replace(/[^\d]/g, "")) || 0,
+    content_suitability: "Teen",
+    target_skills: [],
+    difficulty_level: "Medium",
+    platform_type: "Cross-Platform",
+    platform: ["PC", "Console"],
+    embed_url: "",
+    thumbnail_url: matchedThumbnail
+  };
+}
 };
 
 async function seedGames() {
