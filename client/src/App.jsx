@@ -10,6 +10,7 @@ import Recommendation from "./pages/Recommendation.jsx";
 import AdminLogin from "./pages/AdminLogin.jsx";
 import Signup from "./pages/Signup.jsx";
 import About from "./pages/About.jsx";
+import Donation from "./pages/Donation.jsx";
 
 import "./styles/index.css";
 
@@ -25,6 +26,7 @@ export default function App() {
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/about" element={<About />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/donation" element={<Donation />} />
         </Routes>
       </main>
 
