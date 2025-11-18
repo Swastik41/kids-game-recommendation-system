@@ -1,7 +1,7 @@
-🧩 Kids Game Recommendation System (MERN Stack)
+🧩 Kids Game Exploration System (MERN Stack)
 
 Description:
-The Kids Game Recommendation System is a data-driven web application built using the MERN stack (MongoDB, Express.js, React.js, Node.js). It intelligently recommends fun and engaging games to children based on metadata such as category, difficulty, gameplay style, and skill type — without relying on keyword searches.
+The Kids Game Exploration System is a data-driven web application built using the MERN stack (MongoDB, Express.js, React.js, Node.js). It intelligently recommends fun and engaging games to children based on metadata such as category, difficulty, gameplay style, and skill type — without relying on keyword searches.
 
 This project uses a preloaded dataset (from Kaggle and curated sources) to analyze and rank games using content-based filtering and popularity metrics, delivering safe, relevant, and personalized recommendations. Users can browse game categories, explore suggestions, and even play embedded games directly through the platform.
 
