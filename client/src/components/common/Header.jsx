@@ -29,7 +29,7 @@ export default function Header() {
         {!isAdminArea && (
           <nav className="nav">
             <NavLink to="/" end className="nav__link">Home</NavLink>
-            <NavLink to="/recommendation" className="nav__link">Recommendation</NavLink>
+            <NavLink to="/recommendation" className="nav__link">Exploration</NavLink>
             <NavLink to="/about" className="nav__link">About</NavLink>
             <NavLink to="/donation" className="nav__link">Donation</NavLink>
           </nav>

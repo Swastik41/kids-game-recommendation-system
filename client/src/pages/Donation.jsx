@@ -1,6 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import jsPDF from "jspdf"; // PDF
+
+// simple helper to load Logo.jpg from /public as a data URL for jsPDF
+const LOGO_PATH = "/Logo.jpg";
+
+function loadLogoDataUrl() {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      const dataUrl = canvas.toDataURL("image/png");
+      resolve(dataUrl);
+    };
+    img.onerror = reject;
+    img.src = LOGO_PATH;
+  });
+}
 
 export default function Donation() {
   // store all values that can change on this page
@@ -11,11 +32,14 @@ export default function Donation() {
   const [anonymous, setAnonymous] = useState(false); // hide user name if checked
   const [donorName, setDonorName] = useState(""); // store donor name for PDF
 
-  // NEW: control success popup modal
+  // control success popup modal
   const [showModal, setShowModal] = useState(false);
 
-  // NEW: hover glow around PayPal button
+  // hover glow around PayPal button
   const [hoverPayPal, setHoverPayPal] = useState(false);
+
+  // ref for amount input (for "Other" button)
+  const amountInputRef = useRef(null);
 
   const clientId = process.env.REACT_APP_PAYPAL_CLIENT_ID;
 
@@ -53,116 +77,177 @@ export default function Donation() {
     }
   };
 
-  // PDF Generator (fancy version, now with ref + footer + ribbon)
-  function generateReceiptPDF({ donor, amount, currency, txId, dateISO }) {
+  // ================= PDF Generator – invoice-style with logo =================
+  function generateReceiptPDF({
+    donor,
+    amount,
+    currency,
+    txId,
+    dateISO,
+    logoDataUrl,
+  }) {
     const pdf = new jsPDF();
+    const marginX = 20;
 
-    // === HEADER BAR ===
-    pdf.setFillColor(15, 118, 110); // teal
-    pdf.rect(0, 0, 210, 30, "F"); // full width top bar (A4 width = 210mm)
-
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFontSize(18);
-    pdf.text("Donation Receipt", 20, 18);
-
-    pdf.setFontSize(11);
-    pdf.text("PixiPlay – Kids Learning Platform", 20, 25);
-
-    // reset text color for body
-    pdf.setTextColor(0, 0, 0);
-
-    // === CARD CONTAINER ===
-    const boxX = 15;
-    const boxY = 40;
-    const boxW = 180;
-    const boxH = 90;
-
-    pdf.setDrawColor(200, 200, 200);
-    pdf.setLineWidth(0.5);
-    pdf.roundedRect(boxX, boxY, boxW, boxH, 3, 3); // rounded rectangle
-
-    // === BODY CONTENT INSIDE CARD ===
+    const amountFixed = Number(amount).toFixed(2);
     const dateStr = new Date(dateISO).toLocaleString();
 
-    // simple reference number from txId or date
+    // simple reference number
     const baseForRef = txId || dateISO || "";
     const refSuffix = baseForRef.slice(-6).toUpperCase();
     const refNumber = `PIXI-${refSuffix || "000000"}`;
 
-    let y = boxY + 12;
-    pdf.setFontSize(12);
-    pdf.text(`Donor: ${donor || "Anonymous"}`, boxX + 8, y);
-    y += 8;
+    // OUTER WHITE AREA
+    pdf.setFillColor(255, 255, 255);
+    pdf.rect(10, 10, 190, 277, "F");
 
-    // Highlight amount
-    pdf.setFontSize(13);
+    // LOGO (left)
+    if (logoDataUrl) {
+      // Logo Y: 18 (Starts at y=18, Height=30, ends at y=48)
+      pdf.addImage(logoDataUrl, "PNG", marginX, 18, 40, 30);
+    }
+
+    // APP NAME + HEADER (left)
+    pdf.setTextColor(0, 102, 204); // Blue for the main header
+    pdf.setFontSize(18);
     pdf.setFont(undefined, "bold");
     pdf.text(
-      `Amount: ${currency} ${Number(amount).toFixed(2)}`,
-      boxX + 8,
-      y
+      "PixiPlay – Kids Game Exploration System",
+      marginX + 50,
+      35 // visually centered with logo
     );
-    pdf.setFont(undefined, "normal");
-    y += 8;
 
+    // Secondary Header Text (if you want later)
+    pdf.setTextColor(0, 0, 0);
     pdf.setFontSize(12);
-    pdf.text(`Transaction ID: ${txId || "N/A"}`, boxX + 8, y);
-    y += 8;
+    pdf.setFont(undefined, "normal");
 
-    pdf.text(`Reference: ${refNumber}`, boxX + 8, y);
-    y += 8;
-
-    pdf.text(`Date: ${dateStr}`, boxX + 8, y);
-    y += 12;
-
-    // Thank-you lines
-    pdf.setFontSize(11);
-    pdf.text(
-      "Thank you for supporting children’s learning through PixiPlay.",
-      boxX + 8,
-      y
-    );
-    y += 6;
-    pdf.text(
-      "Your contribution helps us keep educational games fun and accessible.",
-      boxX + 8,
-      y
-    );
-
-    // === THANK-YOU RIBBON (bottom bar) ===
-    pdf.setFillColor(240, 249, 250);
-    pdf.rect(0, 150, 210, 12, "F");
+    // RIGHT BLOCK – below header
     pdf.setFontSize(10);
-    pdf.setTextColor(15, 23, 42);
+    const infoRightX = 190; // right edge
+    let infoY = 52; // start lower than header
+
+    pdf.setFont(undefined, "bold");
+    pdf.text("Donation Receipt", infoRightX, infoY, { align: "right" });
+    pdf.setFont(undefined, "normal");
+    infoY += 6;
+    pdf.text(`Receipt No: ${refNumber}`, infoRightX, infoY, { align: "right" });
+    infoY += 6;
+    pdf.text(`Date: ${dateStr}`, infoRightX, infoY, { align: "right" });
+    infoY += 6;
+    pdf.text(`Transaction ID: ${txId || "N/A"}`, infoRightX, infoY, {
+      align: "right",
+    });
+
+    // DONOR DETAILS – start even lower, so clearly separated
+    let y = 80;
+    pdf.setFontSize(11);
+    pdf.setFont(undefined, "bold");
+    pdf.text("Donor Details", marginX, y);
+    pdf.setFont(undefined, "normal");
+    y += 6;
+    pdf.setFontSize(10);
+    pdf.text(`Name: ${donor || "Anonymous"}`, marginX, y);
+    y += 5;
+    pdf.text("Email: (captured via PayPal sandbox)", marginX, y);
+
+    // ORANGE SECTION HEADER
+    y += 12;
+    pdf.setFillColor(255, 183, 77); // orange bar
+    pdf.rect(marginX, y, 170, 8, "F");
+    pdf.setFontSize(10);
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont(undefined, "bold");
+    pdf.text("DONATION SUMMARY", marginX + 2, y + 5);
+
+    // reset text colour
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFont(undefined, "normal");
+
+    // TABLE HEADER
+    y += 14;
+    pdf.setFontSize(10);
+    pdf.setFillColor(245, 245, 245);
+    pdf.rect(marginX, y, 170, 8, "F");
+    pdf.setFont(undefined, "bold");
+    pdf.text("Description", marginX + 2, y + 5);
+    pdf.text("Qty", marginX + 115, y + 5);
+    pdf.text("Amount", marginX + 145, y + 5);
+
+    // TABLE ROW
+    y += 12;
+    pdf.setFont(undefined, "normal");
+    pdf.text("Donation to support PixiPlay kids learning", marginX + 2, y);
+    pdf.text("1", marginX + 117, y);
+    pdf.text(`${currency} ${amountFixed}`, marginX + 145, y);
+
+    // line under row
+    pdf.setDrawColor(220, 220, 220);
+    pdf.line(marginX, y + 4, marginX + 170, y + 4);
+
+    // TOTALS
+    y += 14;
+    pdf.setFontSize(10);
+    pdf.setFont(undefined, "bold");
+    pdf.text("Total Donation:", marginX + 120, y);
+    pdf.text(`${currency} ${amountFixed}`, marginX + 170, y, {
+      align: "right",
+    });
+
+    // THANK YOU TEXT
+    y += 14;
+    pdf.setFontSize(10);
+    pdf.setFont(undefined, "normal");
     pdf.text(
-      "Thank you for making a difference in kids’ education!",
-      20,
-      158
+      "Thank you for supporting children’s education through PixiPlay.",
+      marginX,
+      y
+    );
+    y += 5;
+    pdf.text(
+      "Your contribution helps us keep interactive learning games free and engaging.",
+      marginX,
+      y
     );
 
-    // === FOOTER SIGNATURE / ISSUER TEXT ===
-    pdf.setTextColor(100, 100, 100);
+    // SIGNATURE LINE – label is JUST company name
+    y += 20;
+    pdf.setDrawColor(180, 180, 180);
+    pdf.line(marginX, y, marginX + 60, y);
     pdf.setFontSize(9);
-    pdf.text("Issued by: PixiPlay Donation System (Sandbox Demo)", 20, 175);
+    pdf.text("PixiPlay Foundation", marginX, y + 5);
+
+    // FOOTER NOTE
+    pdf.setFontSize(8);
+    pdf.setTextColor(120, 120, 120);
     pdf.text(
-      "This receipt is auto-generated and valid for digital confirmation only.",
-      20,
-      181
+      "This receipt is auto-generated by the PixiPlay Donation System (Sandbox).",
+      marginX,
+      270
     );
     pdf.text(
-      "Note: Sandbox test – no real money was transferred.",
-      20,
-      187
+      "Note: Sandbox mode – no real money was transferred.",
+      marginX,
+      275
     );
 
     const file = `Donation_Receipt_${txId || "N_A"}.pdf`;
     pdf.save(file);
   }
+  // ========================================================================
 
-  const handleDownloadReceipt = () => {
+  // async: load logo, then create PDF
+  const handleDownloadReceipt = async () => {
     if (!txId) return;
 
     const visibleDonor = anonymous ? "Anonymous" : donorName || "Donor";
+
+    let logoDataUrl = null;
+    try {
+      logoDataUrl = await loadLogoDataUrl();
+    } catch {
+      logoDataUrl = null; // still create PDF without logo
+    }
 
     generateReceiptPDF({
       donor: visibleDonor,
@@ -170,6 +255,7 @@ export default function Donation() {
       currency: "CAD",
       txId,
       dateISO: new Date().toISOString(),
+      logoDataUrl,
     });
   };
 
@@ -178,7 +264,7 @@ export default function Donation() {
       <h1>Donation for Kids</h1>
       <p>Your donation helps make learning fun and accessible for children.</p>
 
-      {/* Preset amounts */}
+      {/* Preset amounts + Other */}
       <div
         style={{
           display: "flex",
@@ -206,11 +292,36 @@ export default function Donation() {
             ${v}
           </button>
         ))}
+
+        {/* Other / Custom amount button */}
+        <button
+          type="button"
+          onClick={() => {
+            setAmount("");
+            setMessage("");
+            setTxId("");
+            if (amountInputRef.current) {
+              amountInputRef.current.focus();
+            }
+          }}
+          style={{
+            padding: "6px 12px",
+            borderRadius: 999,
+            border: "1px solid #ddd",
+            background: amount === "" ? "#111" : "#f8f8f8",
+            color: amount === "" ? "#fff" : "#111",
+            cursor: "pointer",
+            fontSize: 14,
+          }}
+        >
+          Other
+        </button>
       </div>
 
       {/* Amount input */}
       <div>
         <input
+          ref={amountInputRef}
           type="number"
           value={amount}
           onChange={(e) => {

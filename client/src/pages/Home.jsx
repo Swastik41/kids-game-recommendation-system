@@ -15,7 +15,7 @@ export default function Home() {
     <section className="home">
       <div className="container">
         <div className="hero">
-          <h1>Kids Game<br/>Recommendation System</h1>
+          <h1>Kids Game<br/>Exploration System</h1>
           <p>Find fun and educational games for kids</p>
           <Link to="/recommendation" className="btn btn-dark">Find Games</Link>
         </div>

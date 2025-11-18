@@ -8,7 +8,7 @@ export default function Footer() {
         <p>© {new Date().getFullYear()} PixiPlay — Kids Game Recommendation System</p>
         <nav className="footer__nav">
           <Link to="/">Home</Link>
-          <Link to="/recommendation">Recommendations</Link>
+          <Link to="/recommendation">Exploration</Link>
           <Link to="/about">About</Link>
           <Link to="/donation">Donation</Link>
         </nav>

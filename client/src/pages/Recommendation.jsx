@@ -55,7 +55,7 @@ export default function Recommendation() {
 
   return (
     <section className="reco fullwidth">
-      <h2 className="page-title">Game Recommendations</h2>
+      <h2 className="page-title">Game Exploration</h2>
 
       {/* 🔍 Filters + Search */}
       <div className="filter-bar">
