@@ -90,7 +90,7 @@ export default function GameModal({ open, game, onClose }) {
       {/* ===================================================== */}
       {showGamePlay && (
         <div className="modal">
-          <div className="modal__dialog" style={{ width: "90%", height: "90vh" }}>
+          <div className="modal__dialog" style={{ width: "100%", height: "100vh" }}>
             <button className="modal__close" onClick={closeGame}>
               ✖
             </button>
@@ -102,7 +102,7 @@ export default function GameModal({ open, game, onClose }) {
             <iframe
               src={game.embed_url}
               width="100%"
-              height="400"
+              height="600"
               frameBorder="0"
               allowFullScreen
               title={game ? `${game.title} gameplay` : "Game preview"}
