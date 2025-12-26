@@ -6,7 +6,9 @@ import {
   FaGithub,
   FaTwitter,
   FaYoutube,
+  FaHome,
 } from "react-icons/fa";
+
 
 export default function Footer() {
   const year = new Date().getFullYear();
