@@ -10,7 +10,7 @@ function App() {
 
   return (
     <div>
-      <h1>Kids Game Exploration System</h1>
+      <h1>Kids Game Recommendation System</h1>
       <p>{message}</p>
     </div>
   );

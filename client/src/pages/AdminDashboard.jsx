@@ -237,27 +237,27 @@ export default function AdminDashboard() {
 
       {/* SEARCH BAR – FULL WIDTH BELOW STATS */}
       <div className="admin-search-wide">
-        <label className="sr-only" htmlFor="admin-search">
-          Search games by title or genre
-        </label>
+  <label className="sr-only" htmlFor="admin-search">
+    Search games by title or genre
+  </label>
 
-        <div className="admin-search__wrapper">
-          <span className="admin-search__icon">🔍</span>
-          <input
-            id="admin-search"
-            className="admin-search__input"
-            type="text"
-            placeholder="Search by title or genre…"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+  <div className="admin-search__wrapper">
+    <span className="admin-search__icon">🔍</span>
+    <input
+      id="admin-search"
+      className="admin-search__input"
+      type="text"
+      placeholder="Search by title or genre…"
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+    />
+  </div>
 
-        <p className="admin-search__hint">
-          Showing <strong>{filteredGames.length}</strong> of{" "}
-          <strong>{totalGames}</strong> games
-        </p>
-      </div>
+  <p className="admin-search__hint">
+    Showing <strong>{filteredGames.length}</strong> of{" "}
+    <strong>{totalGames}</strong> games
+  </p>
+</div>
 
       {/* TABLE */}
       <div className="admin-table-wrapper">
@@ -383,84 +383,6 @@ export default function AdminDashboard() {
           </tbody>
         </table>
       </div>
-
-      {/* ===== MOBILE CARD LIST (Visible < 768px) ===== */}
-      <div className="admin-mobile-cards">
-        {filteredGames.map((g) => (
-          <div key={g._id} className="admin-card">
-
-            <div className="admin-card__top">
-              {g.thumbnail_url && (
-                <img
-                  src={g.thumbnail_url}
-                  alt={g.title}
-                  className="admin-card__thumb"
-                />
-              )}
-
-              <div className="admin-card__info">
-                <h3 className="admin-card__title">{g.title}</h3>
-                <p className="admin-card__desc">
-                  {g.description?.slice(0, 85) || "No description"}…
-                </p>
-              </div>
-            </div>
-
-            <div className="admin-card__meta">
-              <div>
-                <span className="meta-label">Primary</span>
-                <span className="meta-value">{g.primary_genre || "—"}</span>
-              </div>
-
-              <div>
-                <span className="meta-label">Difficulty</span>
-                <span className={`pill pill--${(g.difficulty_level || "").toLowerCase()}`}>
-                  {g.difficulty_level}
-                </span>
-              </div>
-
-              <div>
-                <span className="meta-label">Rating</span>
-                <span className="meta-value">
-                  {g.average_user_rating} ({g.rating_count})
-                </span>
-              </div>
-
-              <div>
-                <span className="meta-label">Platform</span>
-                <span className="pill pill--platform">
-                  {g.platform_type || "N/A"}
-                </span>
-              </div>
-            </div>
-
-            <div className="admin-card__actions">
-              <button
-                className="btn-light admin-row-btn"
-                onClick={() =>
-                  setEditGame({
-                    ...g,
-                    genres: Array.isArray(g.genres)
-                      ? g.genres.join(", ")
-                      : g.genres || "",
-                  })
-                }
-              >
-                Edit
-              </button>
-
-              <button
-                className="btn-light admin-row-btn admin-row-btn--danger"
-                onClick={() => handleDelete(g._id)}
-              >
-                Delete
-              </button>
-            </div>
-
-          </div>
-        ))}
-      </div>
-
       {/* ADD MODAL */}
       {showAdd && (
         <div className="modal">

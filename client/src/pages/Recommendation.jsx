@@ -71,13 +71,11 @@ export default function Recommendation() {
 
   return (
     <section className="reco fullwidth">
-      <h2 className="page-title">Explore & Play!!</h2>
+      <h2 className="page-title">Game Recommendations</h2>
 
       {/* 🔍 Filters + Search */}
-      <label htmlFor="search" className="sr-only">Search games</label>
       <div className="filter-bar">
         <input
-          id="search"
           name="search"
           type="text"
           placeholder="Search by game name..."

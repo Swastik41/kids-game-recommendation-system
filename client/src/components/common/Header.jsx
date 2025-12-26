@@ -25,6 +25,18 @@ export default function Header() {
         <Link to="/" className="brand">
           <img src={logo} alt="PixiPlay Logo" className="brand__img" />
         </Link>
+<<<<<<< HEAD
+        {/* Nav */}
+        {!isAdminArea && (
+          <nav className="nav">
+            <NavLink to="/" end className="nav__link">Home</NavLink>
+            <NavLink to="/recommendation" className="nav__link">Exploration</NavLink>
+            <NavLink to="/about" className="nav__link">About</NavLink>
+            <NavLink to="/donation" className="nav__link">Donation</NavLink>
+          </nav>
+        )}
+        {/* User */}
+=======
 
         {/* ==== HAMBURGER MENU (MOBILE ONLY) ==== */}
         <button
@@ -112,26 +124,13 @@ export default function Header() {
               </>
             ) : (
               <>
-                <NavLink
-                  to="/signup"
-                  className="nav__mobile-link"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Sign Up
-                </NavLink>
-                <NavLink
-                  to="/admin"
-                  className="nav__mobile-link"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Login
-                </NavLink>
               </>
             )}
           </div>
         </nav>
 
         {/* ==== USER DROPDOWN (DESKTOP ONLY) ==== */}
+>>>>>>> 6c4aad4 (Updated Frontend and API path)
         <div className="user">
           <button
             className="user__btn"

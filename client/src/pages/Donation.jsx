@@ -1,11 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
-import jsPDF from "jspdf";
+import jsPDF from "jspdf"; // PDF
 
 // simple helper to load Logo.jpg from /public as a data URL for jsPDF
 const LOGO_PATH = "/Logo.jpg";
 
-// load logo for PDF
 function loadLogoDataUrl() {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -16,7 +15,8 @@ function loadLogoDataUrl() {
       canvas.height = img.height;
       const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0);
-      resolve(canvas.toDataURL("image/png"));
+      const dataUrl = canvas.toDataURL("image/png");
+      resolve(dataUrl);
     };
     img.onerror = reject;
     img.src = LOGO_PATH;
@@ -24,82 +24,36 @@ function loadLogoDataUrl() {
 }
 
 export default function Donation() {
-  // EXISTING STATES (unchanged)
-  const [amount, setAmount] = useState("10.00");
-  const [message, setMessage] = useState("");
-  const [isPaying, setIsPaying] = useState(false);
-  const [txId, setTxId] = useState("");
-  const [anonymous, setAnonymous] = useState(false);
-  const [donorName, setDonorName] = useState("");
+  // store all values that can change on this page
+  const [amount, setAmount] = useState("10.00"); // donation amount
+  const [message, setMessage] = useState(""); // success or error message
+  const [isPaying, setIsPaying] = useState(false); // show loading while paying
+  const [txId, setTxId] = useState(""); // PayPal transaction ID
+  const [anonymous, setAnonymous] = useState(false); // hide user name if checked
+  const [donorName, setDonorName] = useState(""); // store donor name for PDF
+
+  // control success popup modal
   const [showModal, setShowModal] = useState(false);
+
+  // hover glow around PayPal button
   const [hoverPayPal, setHoverPayPal] = useState(false);
 
+  // ref for amount input (for "Other" button)
   const amountInputRef = useRef(null);
+
   const clientId = process.env.REACT_APP_PAYPAL_CLIENT_ID;
 
-  // ---------------------------
-  // ⭐ NEW FEATURES STATE
-  // ---------------------------
-
-  // Donation goal (example: $1000 goal)
-  const DONATION_GOAL = 10000;
-  const [totalDonations, setTotalDonations] = useState(250); // start example
-  const progressPercent = Math.min(
-    Math.round((totalDonations / DONATION_GOAL) * 100),
-    100
-  );
-
-  // Top donor list (local only)
-  const [donors, setDonors] = useState([]);
-
-  // Confetti animation trigger
-  const [showConfetti, setShowConfetti] = useState(false);
-
-  // ---------------------------
-  // Confetti Renderer
-  // ---------------------------
-
-  useEffect(() => {
-    if (!showConfetti) return;
-
-    const duration = 2200;
-    const end = Date.now() + duration;
-
-    function frame() {
-      const colors = ["#facc15", "#0ea5e9", "#f97316", "#22c55e"];
-
-      const particle = document.createElement("div");
-      particle.style.position = "fixed";
-      particle.style.top = "-10px";
-      particle.style.left = Math.random() * window.innerWidth + "px";
-      particle.style.width = "8px";
-      particle.style.height = "14px";
-      particle.style.background = colors[Math.floor(Math.random() * colors.length)];
-      particle.style.opacity = 0.9;
-      particle.style.transform = `rotate(${Math.random() * 360}deg)`;
-      particle.style.borderRadius = "2px";
-      particle.style.zIndex = "99999";
-      particle.style.transition = "transform 2s linear, top 2.2s ease-out";
-
-      document.body.appendChild(particle);
-
-      setTimeout(() => {
-        particle.style.top = window.innerHeight + "px";
-        particle.style.transform += " translateY(40px)";
-      }, 10);
-
-      setTimeout(() => particle.remove(), 2300);
-
-      if (Date.now() < end) requestAnimationFrame(frame);
-    }
-    frame();
-
-    setTimeout(() => setShowConfetti(false), 2500);
-  }, [showConfetti]);
-
-  // ---------------------------
-  // Helpers (unchanged)
-  // ---------------------------
+  const container = { maxWidth: 600, margin: "50px auto", textAlign: "center" };
+  const inputStyle = {
+    padding: 10,
+    marginTop: 10,
+    borderRadius: 8,
+    border: "1px solid #ccc",
+    width: 200,
+    textAlign: "center",
+  };
+  const successStyle = { marginTop: 14, fontWeight: "bold", color: "#16a34a" };
+  const errorStyle = { marginTop: 14, fontWeight: "bold", color: "#b91c1c" };
 
   const validAmount = () => {
     const n = Number(amount);
@@ -115,14 +69,15 @@ export default function Donation() {
   const copyTx = async () => {
     try {
       await navigator.clipboard.writeText(txId);
-      setMessage((m) => m + " (Copied!)");
-    } catch {}
+      setMessage((m) =>
+        m ? m + " (Transaction ID copied!)" : "Transaction ID copied!"
+      );
+    } catch {
+      // ignore copy errors silently
+    }
   };
 
-  // ---------------------------
-  // PDF Generator (unchanged)
-  // ---------------------------
-
+  // ================= PDF Generator – invoice-style with logo =================
   function generateReceiptPDF({
     donor,
     amount,
@@ -279,16 +234,20 @@ export default function Donation() {
     const file = `Donation_Receipt_${txId || "N_A"}.pdf`;
     pdf.save(file);
   }
+  // ========================================================================
 
+  // async: load logo, then create PDF
   const handleDownloadReceipt = async () => {
     if (!txId) return;
 
     const visibleDonor = anonymous ? "Anonymous" : donorName || "Donor";
-    let logoDataUrl = null;
 
+    let logoDataUrl = null;
     try {
       logoDataUrl = await loadLogoDataUrl();
-    } catch {}
+    } catch {
+      logoDataUrl = null; // still create PDF without logo
+    }
 
     generateReceiptPDF({
       donor: visibleDonor,
@@ -300,74 +259,21 @@ export default function Donation() {
     });
   };
 
-  // ------------------------------------
-  // PAGE UI
-  // ------------------------------------
-
-  const container = {
-    maxWidth: 650,
-    margin: "50px auto",
-    textAlign: "center",
-    paddingBottom: 60,
-  };
-
   return (
     <div style={container}>
       <h1>Donation for Kids</h1>
       <p>Your donation helps make learning fun and accessible for children.</p>
 
-      {/* ------------------------------------------
-          ⭐ Mission Statement
-      -------------------------------------------- */}
+      {/* Preset amounts + Other */}
       <div
         style={{
-          marginTop: 16,
-          background: "#f0f9ff",
-          padding: "18px 20px",
-          borderRadius: 14,
-          border: "1px solid #bae6fd",
-          textAlign: "left",
+          display: "flex",
+          gap: 8,
+          justifyContent: "center",
+          flexWrap: "wrap",
+          marginTop: 6,
         }}
       >
-        <h2 style={{ margin: 0, color: "#0369a1" }}>🌍 Our Mission</h2>
-        <p style={{ marginTop: 6, fontSize: 14, color: "#0f172a" }}>
-          PixiPlay empowers children through safe, playful, and educational
-          digital experiences. Every contribution helps us expand access to free
-          learning tools, enrich our game recommendations, and improve interactive
-          learning across communities.
-        </p>
-      </div>
-
-      {/* ------------------------------------------
-          ⭐ Donation Goal Progress Bar
-      -------------------------------------------- */}
-      <div style={{ marginTop: 20, textAlign: "left" }}>
-        <h3 style={{ margin: "0 0 6px" }}>🎯 Donation Goal: ${DONATION_GOAL}</h3>
-        <div
-          style={{
-            width: "100%",
-            height: 16,
-            background: "#e5e7eb",
-            borderRadius: 999,
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              width: progressPercent + "%",
-              height: "100%",
-              background: "#0f766e",
-              transition: "width .4s ease",
-            }}
-          ></div>
-        </div>
-        <p style={{ marginTop: 4, fontSize: 14, color: "#374151" }}>
-          Raised: <b>${totalDonations.toFixed(2)}</b> ({progressPercent}%)
-        </p>
-      </div>
-
-      {/* Preset Buttons */}
-      <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap", marginTop: 10 }}>
         {[5, 10, 20, 50].map((v) => (
           <button
             key={v}
@@ -387,12 +293,16 @@ export default function Donation() {
           </button>
         ))}
 
+        {/* Other / Custom amount button */}
         <button
           type="button"
           onClick={() => {
             setAmount("");
+            setMessage("");
             setTxId("");
-            amountInputRef.current?.focus();
+            if (amountInputRef.current) {
+              amountInputRef.current.focus();
+            }
           }}
           style={{
             padding: "6px 12px",
@@ -408,27 +318,23 @@ export default function Donation() {
         </button>
       </div>
 
-      {/* Amount Input */}
-      <label htmlFor="donation-amount" style={{ display: "block", marginTop: 16, fontSize: 14, color: "#444" }}>
-        Enter Donation Amount (CAD):
-      </label>
-      <input
-        id="donation-amount"
-        ref={amountInputRef}
-        type="number"
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
-        min="1"
-        step="0.01"
-        style={{
-          padding: 10,
-          marginTop: 10,
-          borderRadius: 8,
-          border: "1px solid #ccc",
-          width: 200,
-          textAlign: "center",
-        }}
-      />
+      {/* Amount input */}
+      <div>
+        <input
+          ref={amountInputRef}
+          type="number"
+          value={amount}
+          onChange={(e) => {
+            setAmount(e.target.value);
+            setTxId("");
+            setMessage("");
+          }}
+          min="1"
+          step="0.01"
+          style={inputStyle}
+          aria-label="Donation amount in CAD"
+        />
+      </div>
 
       {/* Anonymous toggle */}
       <label
@@ -436,7 +342,7 @@ export default function Donation() {
           display: "inline-flex",
           alignItems: "center",
           gap: 8,
-          marginTop: 10,
+          marginTop: 8,
           fontSize: 14,
           color: "#444",
         }}
@@ -449,13 +355,19 @@ export default function Donation() {
         Donate anonymously
       </label>
 
-      {/* ------------------ PayPal ------------------ */}
+      {!validAmount() && (
+        <div style={{ ...errorStyle }}>Minimum donation is $1.00</div>
+      )}
+
+      {/* PayPal Section with hover glow */}
       <div style={{ marginTop: 16 }}>
         <PayPalScriptProvider
           options={{
             "client-id": clientId,
             currency: "CAD",
             components: "buttons",
+            "enable-funding": "paypal,card",
+            "disable-funding": "paylater,venmo",
           }}
         >
           <div
@@ -466,16 +378,18 @@ export default function Donation() {
               borderRadius: 12,
               padding: 4,
               transition: "box-shadow 0.2s ease",
-              boxShadow: hoverPayPal ? "0 0 18px rgba(15,118,110,0.45)" : "none",
+              boxShadow: hoverPayPal
+                ? "0 0 18px rgba(15,118,110,0.45)"
+                : "0 0 0 rgba(0,0,0,0)",
             }}
           >
             <PayPalButtons
               style={{ layout: "vertical" }}
-              disabled={!validAmount()}
+              disabled={!validAmount() || isPaying}
               createOrder={(_, actions) => {
-                setShowModal(false);
                 setMessage("");
                 setTxId("");
+                setShowModal(false);
                 return actions.order.create({
                   purchase_units: [
                     {
@@ -498,61 +412,104 @@ export default function Donation() {
                   setTxId(id);
                   setDonorName(given);
 
-                  const visible = anonymous ? "Anonymous" : given;
-
-                  // 1️⃣ Update donation total
-                  setTotalDonations((prev) => prev + Number(amount));
-
-                  // 2️⃣ Append to Top Donors list
-                  setDonors((prev) => [
-                    { name: visible, amount: Number(amount) },
-                    ...prev,
-                  ]);
-
-                  // 3️⃣ Trigger Confetti
-                  setShowConfetti(true);
-
-                  // 4️⃣ Show message
+                  const nameToShow = anonymous ? "Anonymous" : given;
                   setMessage(
-                    `Thank you ${visible}! You donated $${Number(amount).toFixed(
-                      2
-                    )} CAD.`
+                    `Thank you ${nameToShow}! You donated $${Number(
+                      amount
+                    ).toFixed(2)} CAD.`
                   );
 
+                  // open success popup
                   setShowModal(true);
                 } catch {
-                  setMessage("Payment failed.");
+                  setMessage("Something went wrong capturing the payment.");
                 } finally {
                   setIsPaying(false);
                 }
+              }}
+              onError={() => {
+                setIsPaying(false);
+                setMessage("Payment failed. Please try again.");
               }}
             />
           </div>
         </PayPalScriptProvider>
       </div>
 
-      {/* ------------------ Top Donors List ------------------ */}
-      {donors.length > 0 && (
-        <div
-          style={{
-            marginTop: 30,
-            textAlign: "left",
-            background: "#fff7ed",
-            padding: "18px 20px",
-            borderRadius: 14,
-            border: "1px solid #fed7aa",
-          }}
-        >
-          <h3 style={{ marginTop: 0, color: "#c2410c" }}>🏆 Top Donors</h3>
-          {donors.slice(0, 5).map((d, i) => (
-            <div key={i} style={{ fontSize: 14, color: "#7c2d12" }}>
-              {i + 1}. {d.name} — <b>${d.amount.toFixed(2)}</b>
-            </div>
-          ))}
+      {isPaying && (
+        <div style={{ marginTop: 8, fontSize: 13, color: "#555" }}>
+          Processing your donation…
         </div>
       )}
 
-      {/* ------------------ Success Modal ------------------ */}
+      {/* Success or Error + PDF button (fallback UI) */}
+      {message && (
+        <div
+          style={{
+            marginTop: 12,
+            display: "inline-flex",
+            flexDirection: "column",
+            gap: 8,
+            alignItems: "center",
+          }}
+        >
+          <p style={message.startsWith("Thank") ? successStyle : errorStyle}>
+            {message}
+          </p>
+
+          {txId && (
+            <>
+              <div style={{ fontSize: 13, color: "#374151" }}>
+                Transaction ID:{" "}
+                <code
+                  style={{
+                    background: "#f3f4f6",
+                    padding: "2px 6px",
+                    borderRadius: 6,
+                  }}
+                >
+                  {txId}
+                </code>{" "}
+                <button
+                  type="button"
+                  onClick={copyTx}
+                  style={{
+                    border: "1px solid #ddd",
+                    background: "#fff",
+                    padding: "3px 8px",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    marginLeft: 6,
+                    fontSize: 12,
+                  }}
+                >
+                  Copy
+                </button>
+              </div>
+
+              {/* Download Receipt */}
+              <button
+                type="button"
+                onClick={handleDownloadReceipt}
+                style={{
+                  marginTop: 6,
+                  border: "none",
+                  background: "#0f766e",
+                  color: "#fff",
+                  padding: "6px 14px",
+                  borderRadius: 999,
+                  cursor: "pointer",
+                  fontSize: 13,
+                }}
+              >
+                Download Receipt (PDF)
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* SUCCESS POPUP MODAL */}
       {showModal && txId && (
         <div
           style={{
@@ -576,20 +533,36 @@ export default function Donation() {
               textAlign: "center",
             }}
           >
-            <h2>🎉 Thank you for your donation!</h2>
-            <p style={{ fontSize: 14 }}>
-              Your contribution helps kids learn through play.
+            <div style={{ fontSize: 32, marginBottom: 8 }}></div>
+            <h2 style={{ margin: "0 0 8px" }}>Thank you for your donation!</h2>
+            <p style={{ margin: 0, fontSize: 14, color: "#4b5563" }}>
+              Your support helps kids learn better through fun and interactive
+              games.
             </p>
-
-            <p>
+            <p
+              style={{
+                marginTop: 10,
+                fontSize: 12,
+                color: "#6b7280",
+                wordBreak: "break-all",
+              }}
+            >
               <strong>Transaction ID:</strong> {txId}
             </p>
 
-            <div style={{ marginTop: 14 }}>
+            <div
+              style={{
+                marginTop: 14,
+                display: "flex",
+                gap: 8,
+                justifyContent: "center",
+                flexWrap: "wrap",
+              }}
+            >
               <button
+                type="button"
                 onClick={handleDownloadReceipt}
                 style={{
-                  marginRight: 8,
                   border: "none",
                   background: "#0f766e",
                   color: "#fff",
@@ -599,17 +572,19 @@ export default function Donation() {
                   fontSize: 13,
                 }}
               >
-                Download Receipt
+                Download Receipt (PDF)
               </button>
-
               <button
+                type="button"
                 onClick={() => setShowModal(false)}
                 style={{
-                  border: "1px solid #ccc",
+                  border: "1px solid #d1d5db",
                   background: "#fff",
+                  color: "#111827",
                   padding: "6px 14px",
                   borderRadius: 999,
                   cursor: "pointer",
+                  fontSize: 13,
                 }}
               >
                 Close

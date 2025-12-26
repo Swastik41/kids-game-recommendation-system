@@ -22,6 +22,6 @@ async function apiCall(endpoint, options = {}) {
 export const AuthAPI = {
   register: (payload) => apiCall('/auth/register', { method: 'POST', body: payload }),
   login:    (payload) => apiCall('/auth/login',    { method: 'POST', body: payload }),
-  // me:       ()        => apiCall('/auth/me'),
+  me:       ()        => apiCall('/auth/me'),
   logout:   ()        => apiCall('/auth/logout',   { method: 'POST' })
 };
