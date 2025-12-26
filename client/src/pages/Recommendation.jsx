@@ -18,34 +18,33 @@ export default function Recommendation() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const fetchRecommendations = async (reset = false) => {
-    setLoading(true);
-    const params = { ...filters, page, limit: 12 };
-    const res = await axios.get("/api/games/recommendations", { params });
-    const { games: newGames, totalPages } = res.data;
+    try {
+      setLoading(true);
+      setError("");
 
-    setGames((prev) => (reset ? newGames : [...prev, ...newGames]));
-    setTotalPages(totalPages);
-    setLoading(false);
+      const params = { ...filters, page, limit: 15 };
+      const res = await axios.get("/api/games/recommendations", { params });
+      const { games: newGames, totalPages: apiTotalPages } = res.data;
+
+      setGames((prev) => (reset ? newGames : [...prev, ...newGames]));
+      setTotalPages(apiTotalPages || 1);
+    } catch (err) {
+      console.error("Error fetching recommendations:", err);
+      setError("We couldn’t load games right now. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // 🔁 Fetch on first load or filter change
+  // Fetch on first load or filter change
   useEffect(() => {
     setPage(1);
     fetchRecommendations(true);
     // eslint-disable-next-line
   }, [filters]);
-
-  const handleChange = (e) => {
-    setFilters({ ...filters, [e.target.name]: e.target.value });
-  };
-
-  const handleLoadMore = () => {
-    if (page < totalPages) {
-      setPage((prev) => prev + 1);
-    }
-  };
 
   // Fetch next page whenever page changes
   useEffect(() => {
@@ -53,9 +52,26 @@ export default function Recommendation() {
     // eslint-disable-next-line
   }, [page]);
 
+  const handleChange = (e) => {
+    setFilters({ ...filters, [e.target.name]: e.target.value });
+  };
+
+  const handleLoadMore = () => {
+    if (page < totalPages && !loading) {
+      setPage((prev) => prev + 1);
+    }
+  };
+
+  const formatRating = (value) => {
+    if (!value && value !== 0) return "0.0";
+    const num = Number(value);
+    if (Number.isNaN(num)) return "0.0";
+    return num.toFixed(1);
+  };
+
   return (
     <section className="reco fullwidth">
-      <h2 className="page-title">Game Exploration</h2>
+      <h2 className="page-title">Game Recommendations</h2>
 
       {/* 🔍 Filters + Search */}
       <div className="filter-bar">
@@ -77,13 +93,11 @@ export default function Recommendation() {
           <option value="Games">Games</option>
         </select>
 
-
         <select name="platform" value={filters.platform} onChange={handleChange}>
           <option value="">Platform</option>
           <option value="Mobile">Mobile</option>
           <option value="Cross-Platform">Video (Cross-Platform)</option>
         </select>
-
 
         <select name="content" value={filters.content} onChange={handleChange}>
           <option value="">Content Rating</option>
@@ -93,8 +107,11 @@ export default function Recommendation() {
           <option value="Everyone">Everyone</option>
         </select>
 
-
-        <select name="minRating" value={filters.minRating} onChange={handleChange}>
+        <select
+          name="minRating"
+          value={filters.minRating}
+          onChange={handleChange}
+        >
           <option value="">Min Rating</option>
           <option value="3">3+</option>
           <option value="4">4+</option>
@@ -102,7 +119,11 @@ export default function Recommendation() {
           <option value="5">5</option>
         </select>
 
-        <select name="minReviews" value={filters.minReviews} onChange={handleChange}>
+        <select
+          name="minReviews"
+          value={filters.minReviews}
+          onChange={handleChange}
+        >
           <option value="">Min Reviews</option>
           <option value="100">100+</option>
           <option value="500">500+</option>
@@ -118,40 +139,65 @@ export default function Recommendation() {
         </select>
       </div>
 
+      {/* Small meta row above cards – text only, no layout change */}
+      <div className="reco-meta-row">
+        <span className="reco-meta-row__left">
+          {games.length} game{games.length !== 1 ? "s" : ""} shown
+        </span>
+        {loading && <span className="reco-meta-row__right">Loading…</span>}
+        {error && (
+          <span className="reco-meta-row__right reco-meta-row__right--error">
+            {error}
+          </span>
+        )}
+      </div>
+
+      {/* Empty state (still above cards) */}
+      {!loading && !error && games.length === 0 && (
+        <p className="reco-status">
+          No games match these filters yet. Try removing one or two filters.
+        </p>
+      )}
+
       {/* 🧩 Game Cards */}
-<div className="cards">
-  {games.map((g) => (
-    <div key={g._id} className="game-card">
-      {/* Game Source Tag */}
-      <div
-        className={`source-tag ${
-          g.platform_type === "Mobile" ? "mobile-tag" : "video-tag"
-        }`}
-      >
-        {g.platform_type === "Mobile" ? "📱 Mobile Game" : "🎮 Video Game"}
+      <div className="cards">
+        {games.map((g) => (
+          <div key={g._id} className="game-card">
+            {/* Game Source Tag */}
+            <div
+              className={`source-tag ${
+                g.platform_type === "Mobile" ? "mobile-tag" : "video-tag"
+              }`}
+            >
+              {g.platform_type === "Mobile" ? "📱 Mobile Game" : "🎮 Video Game"}
+            </div>
+
+            {/* Thumbnail */}
+            <div className="thumb">
+              <img src={g.thumbnail_url || "/placeholder.png"} alt={g.title} />
+            </div>
+
+            {/* Game Info */}
+            <div className="game-body">
+              <div className="game-title">{g.title}</div>
+              <div className="game-meta">
+                ⭐ {formatRating(g.average_user_rating)} | Reviews:{" "}
+                {g.rating_count || 0}
+              </div>
+              <button
+                className="btn btn-light"
+                onClick={() => setSelected(g)}
+              >
+                View Details
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* Thumbnail */}
-      <div className="thumb">
-        <img src={g.thumbnail_url || "/placeholder.png"} alt={g.title} />
-      </div>
-
-      {/* Game Info */}
-      <div className="game-body">
-        <div className="game-title">{g.title}</div>
-        <div className="game-meta">
-          ⭐ {g.average_user_rating || 0} | Reviews: {g.rating_count || 0}
-        </div>
-        <button className="btn btn-light" onClick={() => setSelected(g)}>View Details</button>
-      </div>
-    </div>
-  ))}
-</div>
-
-
-      {/* Load More */}
-      {page < totalPages && (
-        <div style={{ textAlign: "center", marginTop: "1rem" }}>
+      {/* Load More – same placement, just class instead of inline style */}
+      {page < totalPages && games.length > 0 && (
+        <div className="reco-loadmore-wrapper">
           <button
             onClick={handleLoadMore}
             className="btn btn-dark"

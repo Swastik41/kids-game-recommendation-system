@@ -3,9 +3,12 @@ import User from "../models/User.js";
 
 export async function requireAuth(req, res, next) {
   try {
-    const hdr = req.headers.authorization || "";
-    const token = hdr.startsWith("Bearer ") ? hdr.slice(7) : null;
-    if (!token) return res.status(401).json({ message: "Missing Authorization header" });
+    // ⬇️ read from cookie instead of Authorization header
+    const token = req.cookies?.token;
+
+    if (!token) {
+      return res.status(401).json({ message: "Missing auth token" });
+    }
 
     const payload = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(payload.sub).select("-passwordHash");
