@@ -25,7 +25,7 @@ export default function Header() {
         <Link to="/" className="brand">
           <img src={logo} alt="PixiPlay Logo" className="brand__img" />
         </Link>
-<<<<<<< HEAD
+
         {/* Nav */}
         {!isAdminArea && (
           <nav className="nav">
@@ -36,7 +36,7 @@ export default function Header() {
           </nav>
         )}
         {/* User */}
-=======
+
 
         {/* ==== HAMBURGER MENU (MOBILE ONLY) ==== */}
         <button
@@ -130,7 +130,7 @@ export default function Header() {
         </nav>
 
         {/* ==== USER DROPDOWN (DESKTOP ONLY) ==== */}
->>>>>>> 6c4aad4 (Updated Frontend and API path)
+
         <div className="user">
           <button
             className="user__btn"
