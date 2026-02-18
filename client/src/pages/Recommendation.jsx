@@ -88,20 +88,19 @@ export default function Recommendation() {
       </header>
 
       <div className="filter-bar">
-  <label htmlFor="reco-search" className="sr-only">
-    Search games by name
-  </label>
+        <label htmlFor="reco-search" className="sr-only">
+          Search games by name
+        </label>
 
-  <input
-    id="reco-search"
-    name="search"
-    type="text"
-    placeholder="Search by game name..."
-    value={filters.search}
-    onChange={handleChange}
-    className="filter-search-input"
-  />
-
+        <input
+          id="reco-search"
+          name="search"
+          type="text"
+          placeholder="Search by game name..."
+          value={filters.search}
+          onChange={handleChange}
+          className="filter-search-input"
+        />
 
         <select name="genre" value={filters.genre} onChange={handleChange}>
           <option value="">Genre</option>

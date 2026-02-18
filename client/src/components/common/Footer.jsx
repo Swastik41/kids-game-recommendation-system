@@ -20,21 +20,31 @@ export default function Footer() {
           <Link to="/">Home</Link>
           <Link to="/about">About</Link>
           <Link to="/recommendation">Game Exploration</Link>
-          <Link to="/donation">Donation</Link>
+          <Link to="/donation">Support PixiPlay</Link>
         </div>
 
         <div className="footer__column">
-          <h4>Parents</h4>
+          <h4>Support</h4>
+          <Link to="/faq">Help Center & FAQ</Link>
+          <Link to="/contact">Contact Us</Link>
           <Link to="/about">Safety Tips</Link>
-          <Link to="/recommendation">Screen Balance Picks</Link>
-          <Link to="/recommendation">Learning Games</Link>
+          <Link to="/about">Resources</Link>
         </div>
 
         <div className="footer__column">
-          <h4>Teachers</h4>
-          <Link to="/recommendation">Classroom Games</Link>
-          <Link to="/recommendation">Skill Builders</Link>
-          <Link to="/about">Resources</Link>
+          <h4>Legal</h4>
+          <Link to="/privacy">Privacy Policy</Link>
+          <Link to="/terms">Terms of Service</Link>
+          <Link to="/accessibility">Accessibility</Link>
+          <Link to="/about">Child Safety</Link>
+        </div>
+
+        <div className="footer__column">
+          <h4>Community</h4>
+          <Link to="/recommendation">For Parents</Link>
+          <Link to="/recommendation">For Teachers</Link>
+          <Link to="/recommendation">For Kids</Link>
+          <Link to="/about">Our Mission</Link>
         </div>
       </div>
 

@@ -12,6 +12,11 @@ import Signup from "./pages/Signup.jsx";
 import About from "./pages/About.jsx";
 import Donation from "./pages/Donation.jsx";
 import AdminDashboard from "./pages/AdminDashboard";
+import PrivacyPolicy from "./pages/PrivacyPolicy.jsx";
+import TermsOfService from "./pages/TermsOfService.jsx";
+import FAQ from "./pages/FAQ.jsx";
+import Contact from "./pages/Contact.jsx";
+import Accessibility from "./pages/Accessibility.jsx";
 
 import "./styles/index.css";
 
@@ -29,6 +34,11 @@ export default function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/donation" element={<Donation />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/accessibility" element={<Accessibility />} />
         </Routes>
       </main>
 
