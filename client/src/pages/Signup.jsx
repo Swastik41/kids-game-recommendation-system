@@ -15,11 +15,28 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Password strength validation
+  const validatePassword = (pass) => {
+    return {
+      minLength: pass.length >= 8,
+      hasUpperCase: /[A-Z]/.test(pass),
+      hasLowerCase: /[a-z]/.test(pass),
+      hasNumber: /[0-9]/.test(pass)
+    };
+  };
+
+  const passwordStrength = password ? validatePassword(password) : null;
+  const isPasswordValid = passwordStrength ? Object.values(passwordStrength).every(Boolean) : false;
+
   async function handleSubmit(e) {
     e.preventDefault();
     setMessage("");
 
     if (!agree) { setMessage("Please agree to the terms to continue."); return; }
+    if (!isPasswordValid) { 
+      setMessage("Password must meet all security requirements below."); 
+      return; 
+    }
     if (password !== confirm) { setMessage("Passwords do not match."); return; }
 
     try {
@@ -140,6 +157,29 @@ export default function Signup() {
               required
               autoComplete="new-password"
             />
+            {password && (
+              <div className="password-requirements">
+                <p className="requirements-label">Password must contain:</p>
+                <ul className="requirements-list">
+                  <li className={passwordStrength.minLength ? "requirement-met" : "requirement-unmet"}>
+                    <span className="requirement-icon">{passwordStrength.minLength ? "✓" : "○"}</span>
+                    At least 8 characters
+                  </li>
+                  <li className={passwordStrength.hasUpperCase ? "requirement-met" : "requirement-unmet"}>
+                    <span className="requirement-icon">{passwordStrength.hasUpperCase ? "✓" : "○"}</span>
+                    One uppercase letter
+                  </li>
+                  <li className={passwordStrength.hasLowerCase ? "requirement-met" : "requirement-unmet"}>
+                    <span className="requirement-icon">{passwordStrength.hasLowerCase ? "✓" : "○"}</span>
+                    One lowercase letter
+                  </li>
+                  <li className={passwordStrength.hasNumber ? "requirement-met" : "requirement-unmet"}>
+                    <span className="requirement-icon">{passwordStrength.hasNumber ? "✓" : "○"}</span>
+                    One number
+                  </li>
+                </ul>
+              </div>
+            )}
           </div>
 
           <div className="field">

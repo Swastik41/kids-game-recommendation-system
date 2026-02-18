@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import GameModal from "../components/common/GameModal.jsx";
+import { API_BASE_URL } from "../config.js";
 
 export default function Recommendation() {
   const defaultFilters = {
@@ -30,7 +31,7 @@ export default function Recommendation() {
       setError("");
 
       const params = { ...filters, page, limit: 15 };
-      const res = await axios.get("/api/games/recommendations", { params });
+      const res = await axios.get(`${API_BASE_URL}/games/recommendations`, { params });
       const { games: newGames, totalPages: apiTotalPages } = res.data;
 
       setGames((prev) => (reset ? newGames : [...prev, ...newGames]));

@@ -31,13 +31,30 @@ export const getRecommendations = async (req, res) => {
 
     const query = {};
 
-    // ✅ Dynamic filters
-    if (genre) query.genres = { $regex: genre, $options: "i" };
-    if (platform) query.platform_type = { $regex: platform, $options: "i" };
-    if (content) query.content_suitability = { $regex: content, $options: "i" };
-    if (minRating) query.average_user_rating = { $gte: Number(minRating) };
-    if (minReviews) query.rating_count = { $gte: Number(minReviews) };
-    if (search) query.title = { $regex: search, $options: "i" };
+    // ✅ Input validation to prevent ReDoS attacks
+    const sanitizeInput = (input, maxLength = 50) => {
+      if (!input || typeof input !== 'string') return null;
+      return input.slice(0, maxLength).trim();
+    };
+
+    // ✅ Dynamic filters with sanitization
+    const safeGenre = sanitizeInput(genre);
+    const safePlatform = sanitizeInput(platform);
+    const safeContent = sanitizeInput(content);
+    const safeSearch = sanitizeInput(search, 100);
+
+    if (safeGenre) query.genres = { $regex: safeGenre, $options: "i" };
+    if (safePlatform) query.platform_type = { $regex: safePlatform, $options: "i" };
+    if (safeContent) query.content_suitability = { $regex: safeContent, $options: "i" };
+    if (minRating) {
+      const rating = Number(minRating);
+      if (rating >= 0 && rating <= 5) query.average_user_rating = { $gte: rating };
+    }
+    if (minReviews) {
+      const reviews = Number(minReviews);
+      if (reviews >= 0 && reviews <= 1000000) query.rating_count = { $gte: reviews };
+    }
+    if (safeSearch) query.title = { $regex: safeSearch, $options: "i" };
 
     // ✅ Sorting logic
     let sortQuery = {};

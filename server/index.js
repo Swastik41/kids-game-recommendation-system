@@ -4,13 +4,19 @@ import cors from 'cors';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import mongoose from 'mongoose';
+import helmet from 'helmet';
 import authRoutes from './routes/auth.routes.js';
 import gamesRoutes from "./routes/gameRoutes.js";
+import { apiLimiter } from './middleware/rateLimiter.js';
 
 const app = express();
 
 const PORT = Number(process.env.PORT || 5000);
 const HOST = '0.0.0.0';
+
+// Core middleware (must be first for Express 5.x)
+app.use(express.json());
+app.use(cookieParser());
 
 // CORS BEFORE routes
 app.use(cors({
@@ -18,8 +24,25 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json());
-app.use(cookieParser());
+// ===== SECURITY MIDDLEWARE =====
+// Helmet: Set security headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:", "http:"],
+      scriptSrc: ["'self'"],
+      connectSrc: ["'self'"]
+    }
+  },
+  crossOriginEmbedderPolicy: false
+}));
+
+// Rate limiting for all API routes
+app.use('/api', apiLimiter);
+
 app.use(morgan('dev'));
 
 // health/root
