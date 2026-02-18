@@ -11,6 +11,7 @@ import AdminLogin from "./pages/AdminLogin.jsx";
 import Signup from "./pages/Signup.jsx";
 import About from "./pages/About.jsx";
 import Donation from "./pages/Donation.jsx";
+import AdminDashboard from "./pages/AdminDashboard";
 
 import "./styles/index.css";
 
@@ -27,6 +28,7 @@ export default function App() {
           <Route path="/about" element={<About />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/donation" element={<Donation />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
         </Routes>
       </main>
 

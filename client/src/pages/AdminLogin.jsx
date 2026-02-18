@@ -45,13 +45,20 @@ export default function AdminLogin() {
     <section className="login">
       <div className="login__card">
         <h1 className="login__title">Welcome Back</h1>
+        <p className="login__subtitle">
+          Sign in to continue your game exploration journey with personalized,
+          age-appropriate recommendations.
+        </p>
 
-        <form onSubmit={handleSubmit} className="login__form">
+        <form onSubmit={handleSubmit} className="login__form" autoComplete="off">
           <div className="field">
             <label className="label">Role (optional)</label>
             <select
               value={role}
-              onChange={(e) => setRole(e.target.value)}
+              onChange={(e) => {
+                setRole(e.target.value);
+                setMessage("");
+              }}
               className="select"
             >
               <option>Parent</option>
@@ -66,9 +73,13 @@ export default function AdminLogin() {
               type="email"
               className="input"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setMessage("");
+              }}
               placeholder="you@example.com"
               required
+              autoComplete="off"
             />
           </div>
 
@@ -78,9 +89,13 @@ export default function AdminLogin() {
               type="password"
               className="input"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setMessage("");
+              }}
               placeholder="••••••••"
               required
+              autoComplete="new-password"
             />
           </div>
 

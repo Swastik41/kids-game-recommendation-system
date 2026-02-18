@@ -56,11 +56,22 @@ export default function Signup() {
     <section className="signup">
       <div className="signup__card">
         <h1 className="signup__title">Create an Account</h1>
+        <p className="signup__subtitle">
+          Build your family or classroom profile to get safer, smarter, and
+          more effective game exploration results.
+        </p>
 
-        <form className="signup__form" onSubmit={handleSubmit}>
+        <form className="signup__form" onSubmit={handleSubmit} autoComplete="off">
           <div className="field">
             <label className="label">Role</label>
-            <select className="select" value={role} onChange={(e) => setRole(e.target.value)}>
+            <select
+              className="select"
+              value={role}
+              onChange={(e) => {
+                setRole(e.target.value);
+                setMessage("");
+              }}
+            >
               <option value="Parent">Parent</option>
               <option value="Admin">Admin</option>
             </select>
@@ -72,9 +83,13 @@ export default function Signup() {
               className="input"
               type="text"
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              onChange={(e) => {
+                setFullName(e.target.value);
+                setMessage("");
+              }}
               placeholder="Your full name"
               required
+              autoComplete="off"
             />
           </div>
 
@@ -84,10 +99,14 @@ export default function Signup() {
               className="input"
               type="number"
               value={childAge}
-              onChange={(e) => setChildAge(e.target.value)}
+              onChange={(e) => {
+                setChildAge(e.target.value);
+                setMessage("");
+              }}
               min="1"
               max="18"
               placeholder="e.g., 7"
+              autoComplete="off"
             />
           </div>
 
@@ -97,9 +116,13 @@ export default function Signup() {
               className="input"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setMessage("");
+              }}
               placeholder="you@example.com"
               required
+              autoComplete="off"
             />
           </div>
 
@@ -109,9 +132,13 @@ export default function Signup() {
               className="input"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setMessage("");
+              }}
               placeholder="••••••••"
               required
+              autoComplete="new-password"
             />
           </div>
 
@@ -121,9 +148,13 @@ export default function Signup() {
               className="input"
               type="password"
               value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
+              onChange={(e) => {
+                setConfirm(e.target.value);
+                setMessage("");
+              }}
               placeholder="••••••••"
               required
+              autoComplete="new-password"
             />
           </div>
 
@@ -132,7 +163,10 @@ export default function Signup() {
               <input
                 type="checkbox"
                 checked={agree}
-                onChange={(e) => setAgree(e.target.checked)}
+                onChange={(e) => {
+                  setAgree(e.target.checked);
+                  setMessage("");
+                }}
               />
               I agree to the Terms
             </label>

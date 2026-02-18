@@ -6,7 +6,7 @@ export const getHomeGames = async (req, res) => {
   try {
     const games = await Game.find({})
       .sort({ average_user_rating: -1, rating_count: -1 })
-      .limit(12)
+      .limit(9)
       .lean();
     res.status(200).json(games);
   } catch (err) {

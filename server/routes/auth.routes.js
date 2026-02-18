@@ -22,8 +22,16 @@ router.post('/register', async (req, res) => {
     const user = await User.create({ name: name.trim(), email: email.toLowerCase(), passwordHash, role });
 
     const token = generateToken(user._id, process.env.JWT_SECRET, process.env.JWT_EXPIRES);
+
+    // ⬇️ set HTTP-only cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000
+    });
+
     res.status(201).json({
-      token,
       user: { id: user._id, name: user.name, email: user.email, role: user.role }
     });
   } catch (err) {
@@ -45,14 +53,32 @@ router.post('/login', async (req, res) => {
     assert(ok, 'Invalid credentials', 401);
 
     const token = generateToken(user._id, process.env.JWT_SECRET, process.env.JWT_EXPIRES);
+
+    // ⬇️ set HTTP-only cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000
+    });
+
     res.json({
-      token,
       user: { id: user._id, name: user.name, email: user.email, role: user.role }
     });
   } catch (err) {
     res.status(err.status || 400).json({ message: err.message || 'Login failed' });
   }
 });
+// POST /api/auth/logout
+router.post('/logout', (req, res) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict'
+  });
+  res.json({ message: 'Logged out' });
+});
+
 
 // GET /api/auth/me
 router.get('/me', requireAuth, (req, res) => res.json({ user: req.user }));

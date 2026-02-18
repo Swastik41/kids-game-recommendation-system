@@ -1,39 +1,99 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
-export default function GameModal({ open, game, onClose, onPlay }) {
+export default function GameModal({ open, game, onClose }) {
   const dialogRef = useRef(null);
   const closeBtnRef = useRef(null);
+  const timerRef = useRef(null);
 
-  // Close on ESC
+  // ===============================
+  // 🔥 STATE FOR PLAYING DEMO
+  // ===============================
+  const [showGamePlay, setShowGamePlay] = useState(false);
+  const [timer, setTimer] = useState(45);
+
+  // ===============================
+  // 🔥 START GAME (45 sec)
+  // ===============================
+  function startGame() {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    setShowGamePlay(true);
+    setTimer(45);
+
+    timerRef.current = setInterval(() => {
+      setTimer((t) => {
+        if (t <= 1) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+          setShowGamePlay(false);
+        }
+        return t - 1;
+      });
+    }, 1000);
+  }
+
+  function closeGame() {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setShowGamePlay(false);
+  }
+
+  // ===============================
+  // 🔥 ESC CLOSE
+  // ===============================
   useEffect(() => {
     function onKey(e) {
-      if (e.key === "Escape") onClose?.();
+      if (e.key === "Escape") {
+        if (showGamePlay) return setShowGamePlay(false);
+        onClose?.();
+      }
     }
     if (open) document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
+  }, [open, showGamePlay, onClose]);
 
-  // Focus close button when opened
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, []);
+
+  // ===============================
+  // 🔥 Auto focus close button
+  // ===============================
   useEffect(() => {
     if (open && closeBtnRef.current) closeBtnRef.current.focus();
   }, [open]);
 
   if (!open || !game) return null;
 
-  // 🔥 Clean description (remove \n, unicode garbage)
+  // ===============================
+  // 🔥 CLEAN DESCRIPTION TEXT
+  // ===============================
   let cleanDesc = (game.description || "")
-    .replace(/\\n/g, " ")               // remove \n
-    .replace(/\\u[0-9a-fA-F]{4}/g, "")  // remove unicode blocks like \u25a0
-    .replace(/\s\s+/g, " ")             // remove double spaces
+    .replace(/\\n/g, " ")
+    .replace(/\\u[0-9a-fA-F]{4}/g, "")
+    .replace(/\s\s+/g, " ")
     .trim();
 
   const shortDesc =
     cleanDesc.length > 240 ? cleanDesc.substring(0, 240) + "..." : cleanDesc;
 
-  // 🎨 Category BADGES instead of long text
   const genreBadges = Array.isArray(game.genres)
-    ? game.genres.slice(0, 3) // max 3 badges
+    ? game.genres.slice(0, 3)
     : [];
+
+  // =============================================
+  // ⭐ RETURN UI
+  // =============================================
 
   return (
     <div
@@ -44,6 +104,42 @@ export default function GameModal({ open, game, onClose, onPlay }) {
       onClick={(e) => e.target === e.currentTarget && onClose?.()}
       ref={dialogRef}
     >
+
+      {/* ===================================================== */}
+      {/* 🎮 PLAY GAME POPUP (45 sec DEMO) */}
+      {/* ===================================================== */}
+      {showGamePlay && (
+        <div className="modal">
+          <div className="modal__dialog modal__dialog--gameplay">
+            <button className="modal__close" onClick={closeGame}>
+              ✖
+            </button>
+
+            <h2 className="modal__gameplay-title">
+              {game.title} — Demo Play ({timer}s)
+            </h2>
+
+            <iframe
+              src={game.embed_url}
+              width="100%"
+              height="400"
+              frameBorder="0"
+              allowFullScreen
+              title={game ? `${game.title} gameplay` : "Game preview"}
+            />
+
+
+            <p className="modal__gameplay-note">
+              Demo auto-closes in {timer} seconds
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ===================================================== */}
+      {/* 🎮 MAIN GAME DETAILS */}
+      {/* ===================================================== */}
+
       <div className="modal__dialog">
         {/* CLOSE BUTTON */}
         <button
@@ -62,9 +158,8 @@ export default function GameModal({ open, game, onClose, onPlay }) {
           </h2>
 
           <span
-            className={`source-tag ${
-              game.platform_type === "Mobile" ? "mobile-tag" : "video-tag"
-            }`}
+            className={`source-tag ${game.platform_type === "Mobile" ? "mobile-tag" : "video-tag"
+              }`}
           >
             {game.platform_type === "Mobile" ? "📱 Mobile Game" : "🎮 Video Game"}
           </span>
@@ -72,6 +167,7 @@ export default function GameModal({ open, game, onClose, onPlay }) {
 
         {/* BODY */}
         <div className="modal__body">
+
           {/* THUMBNAIL */}
           <div className="modal__media">
             <img
@@ -85,7 +181,7 @@ export default function GameModal({ open, game, onClose, onPlay }) {
           {/* RIGHT CONTENT */}
           <div className="modal__content">
 
-            {/* META INFO */}
+            {/* Meta info */}
             <div className="modal__meta">
 
               <div className="meta__row">
@@ -107,10 +203,10 @@ export default function GameModal({ open, game, onClose, onPlay }) {
                 <span className="badge-container">
                   {genreBadges.length > 0
                     ? genreBadges.map((g, i) => (
-                        <span key={i} className="genre-badge">
-                          {g}
-                        </span>
-                      ))
+                      <span key={i} className="genre-badge">
+                        {g}
+                      </span>
+                    ))
                     : "—"}
                 </span>
               </div>
@@ -130,13 +226,15 @@ export default function GameModal({ open, game, onClose, onPlay }) {
 
             {/* ACTION BUTTONS */}
             <div className="modal__actions">
-              <button className="btn btn-dark" onClick={() => onPlay?.(game)}>
+              <button className="btn btn-dark" onClick={startGame}>
                 Play Game
               </button>
+
               <button className="btn btn-light" onClick={onClose}>
                 Close
               </button>
             </div>
+
           </div>
         </div>
       </div>
