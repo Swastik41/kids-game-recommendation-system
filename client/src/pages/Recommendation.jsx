@@ -30,7 +30,7 @@ export default function Recommendation() {
       setLoading(true);
       setError("");
 
-      const params = { ...filters, page, limit: 15 };
+      const params = { ...filters, page, limit: 12 };
       const res = await axios.get(`${API_BASE_URL}/games/recommendations`, { params });
       const { games: newGames, totalPages: apiTotalPages } = res.data;
 
